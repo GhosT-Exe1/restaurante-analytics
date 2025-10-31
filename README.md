@@ -19,6 +19,7 @@ O projeto é dividido em **frontend** e **backend**:
 ## 🧩 Estrutura do Projeto
 
 📦 restaurante-analytics
+
 ┣ 📜 app.js # Frontend principal (UI e lógica do dashboard)
 
 ┣ 📜 api.js # Cliente HTTP para comunicação com backend
