@@ -20,14 +20,16 @@ O projeto é dividido em **frontend** e **backend**:
 
 📦 restaurante-analytics
 ┣ 📜 app.js # Frontend principal (UI e lógica do dashboard)
-┣ 📜 api.js # Cliente HTTP para comunicação com backend
-┣ 📜 server.js # Servidor Express com rotas /api/*
-┣ 📜 db.js # Conexão e queries com banco PostgreSQL
-┣ 📜 populate-db.js # (opcional) script de geração de dados mock
-┗ 📄 README.md
 
-yaml
-Copiar código
+┣ 📜 api.js # Cliente HTTP para comunicação com backend
+
+┣ 📜 server.js # Servidor Express com rotas /api/*
+
+┣ 📜 db.js # Conexão e queries com banco PostgreSQL
+
+┣ 📜 populate-db.js # (opcional) script de geração de dados mock
+
+┗ 📄 README.md
 
 ---
 
