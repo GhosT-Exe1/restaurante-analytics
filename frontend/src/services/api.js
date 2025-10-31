@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = (window && window.BACKEND_URL) || 'http://localhost:8000';
+const DEFAULT_BASE_URL = (window && window.BACKEND_URL) || 'https://restaurante-analytics-rcdj.vercel.app/';
 
 function buildUrl(path, params = {}) {
   const url = new URL(path, DEFAULT_BASE_URL);
