@@ -1,176 +1,180 @@
+# 🍽️ Restaurante Analytics
 
-# 🧠 Documentação do Script `populate-db.js`
-
-## 📋 O que é
-Este script **gera dados falsos (mock)** para preencher um banco de dados PostgreSQL com informações de um sistema de restaurante.  
-Ele cria **lojas, produtos, clientes, vendas, canais de venda, marcas, sub-marcas e muito mais**.
-
-Ideal para testar painéis analíticos, relatórios e dashboards sem precisar de dados reais.
+Um sistema completo de **análise de desempenho para redes de restaurantes**, com painel interativo, API Node.js e integração com banco PostgreSQL.  
+Permite visualizar **faturamento**, **pedidos**, **ticket médio**, **cancelamentos**, **vendas por dia**, **produtos mais vendidos** e **comparação entre lojas**.
 
 ---
 
-## 🚀 Como usar
+## 🚀 Visão Geral
 
-### 1️⃣ Pré-requisitos
-- Node.js instalado  
-- Banco PostgreSQL criado e acessível  
-- Tabelas já criadas (o script **não cria tabelas**, apenas insere dados)
+O projeto é dividido em **frontend** e **backend**:
 
-### 2️⃣ Execução
-No terminal:
-```bash
+| Camada | Arquivo principal | Descrição |
+|--------|-------------------|------------|
+| 🖥️ Frontend | `app.js`, `api.js` | Painel interativo em JavaScript puro (sem frameworks) |
+| ⚙️ Backend | `server.js`, `db.js` | API REST em Express.js conectada ao PostgreSQL |
+
+---
+
+## 🧩 Estrutura do Projeto
+
+📦 restaurante-analytics
+
+┣ 📜 app.js # Frontend principal (UI e lógica do dashboard)
+
+┣ 📜 api.js # Cliente HTTP para comunicação com backend
+
+┣ 📜 server.js # Servidor Express com rotas /api/*
+
+┣ 📜 db.js # Conexão e queries com banco PostgreSQL
+
+┣ 📜 populate-db.js # (opcional) script de geração de dados mock
+
+┗ 📄 README.md
+
+---
+
+## 🖥️ Frontend (`app.js` + `api.js`)
+
+### 📊 Objetivo
+O frontend é um painel de controle interativo construído com **JavaScript puro (ES6)**.  
+Ele se conecta ao backend via `fetch()` e exibe gráficos, tabelas e indicadores de desempenho (KPIs).
+
+---
+
+### 🔌 `api.js` – Cliente de API
+
+#### Funções principais:
+- `fetchStores()` → lista de lojas  
+- `fetchChannels()` → lista de canais de venda  
+- `fetchKpis({ store, channel, range })` → KPIs do período  
+- `fetchDailySales({ store, channel, range })` → vendas diárias  
+- `fetchTopProducts({ store, channel, range, limit })` → produtos mais vendidos  
+
+A URL base é configurada via variável global `BACKEND_URL` ou padrão `http://localhost:8000`.
+
+---
+
+### 🎨 `app.js` – Dashboard interativo
+
+#### Principais componentes:
+
+| Função | Descrição |
+|--------|------------|
+| `renderFilters()` | Cria filtros de loja, canal e período |
+| `renderKPIs()` | Mostra indicadores principais (faturamento, pedidos, ticket, cancelamentos) |
+| `renderBarChart()` | Gera gráfico de barras de vendas diárias |
+| `renderTopProductsTable()` | Exibe tabela dos produtos mais vendidos |
+| `renderCompareBarChart()` | Mostra gráfico comparativo entre lojas |
+| `exportCSV()` | Exporta dados visualizados em formato `.csv` |
+
+#### Recursos extras:
+- Formatação BRL (`R$ 1.234,56`)
+- Tooltips nos gráficos
+- Filtros dinâmicos
+- Exportação CSV com cabeçalhos em português
+- Suporte a **comparação entre duas lojas**
+
+---
+
+## ⚙️ Backend (`server.js` + `db.js`)
+
+### 🧠 Estrutura
+O backend é construído em **Node.js + Express.js**, com queries SQL otimizadas via `pg`.
+
+#### Principais endpoints REST:
+| Método | Endpoint | Descrição |
+|--------|-----------|-----------|
+| `GET /health` | Status do servidor |
+| `GET /api/stores` | Lista de lojas |
+| `GET /api/channels` | Lista de canais de venda |
+| `GET /api/kpis` | KPIs do período (faturamento, pedidos, etc.) |
+| `GET /api/sales/daily` | Vendas diárias (para gráficos) |
+| `GET /api/products/top` | Produtos mais vendidos |
+
+---
+
+### 🧩 `server.js`
+
+#### Recursos:
+- Middleware `cors` e `dotenv`  
+- Função `buildFilters()` → adiciona condições SQL dinâmicas (store, channel)  
+- Função `parseRange()` → converte períodos (`7d`, `30d`, `90d`)  
+- Consultas SQL otimizadas com `JOIN`, `GROUP BY` e filtros por período  
+
+#### Exemplo de retorno de `/api/kpis`:
+```json
+{
+  "revenue": 50234.75,
+  "orders": 1423,
+  "aov": 35.31,
+  "cancelRate": 0.03
+}
+🗄️ db.js
+Gerencia a conexão com PostgreSQL via pg.Pool.
+
+Configuração via variáveis de ambiente:
+Variável	Exemplo	Descrição
+PGHOST	localhost	Host do banco
+PGPORT	5432	Porta
+PGDATABASE	challenge_db	Nome do banco
+PGUSER	challenge	Usuário
+PGPASSWORD	challenge	Senha
+
+A função query(text, params) executa comandos SQL e mede a duração, registrando queries lentas (>200ms).
+
+💾 Banco de Dados
+Tabelas esperadas:
+
+Tabela	Campos principais
+stores	id, name, city, is_active
+channels	id, name
+sales	id, store_id, channel_id, total_amount, created_at, sale_status_desc
+products	id, name, category_id
+product_sales	sale_id, product_id, quantity, total_price
+
+🔧 Configuração e Execução
+🐘 1. Banco de Dados
+Crie o banco PostgreSQL e, se desejar, use o script populate-db.js para gerar dados fictícios:
+
+bash
+Copiar código
 node populate-db.js "postgresql://usuario:senha@host:5432/database"
-```
+⚙️ 2. Backend
+Instale dependências e rode o servidor:
 
-Ou usando variável de ambiente:
-```bash
-DATABASE_URL="postgresql://usuario:senha@host:5432/database" node populate-db.js
-```
+bash
+Copiar código
+npm install
+node server.js
+Por padrão, o backend roda em http://localhost:8000.
 
-**Exemplo (Supabase):**
-```bash
-node populate-db.js "postgresql://postgres:senha@db.xxx.supabase.co:5432/postgres?sslmode=require"
-```
+🖥️ 3. Frontend
+Basta abrir o arquivo index.html (que importa app.js e api.js) no navegador.
+Defina a variável global para apontar ao backend:
 
----
+html
+Copiar código
+<script>
+  window.BACKEND_URL = 'http://localhost:8000';
+</script>
+📈 Funcionalidades Principais
+✅ Indicadores de performance (KPIs)
+✅ Filtro por loja, canal e período
+✅ Comparação entre lojas
+✅ Gráficos de vendas diárias
+✅ Tabela de produtos mais vendidos
+✅ Exportação CSV com valores formatados
+✅ Layout responsivo e intuitivo
 
-## ⚙️ Configuração principal
-```js
-const config = {
-  stores: 50,       // Quantas lojas serão criadas
-  products: 500,    // Quantos produtos
-  items: 200,       // (não usado diretamente)
-  customers: 10000, // Quantos clientes
-  months: 6,        // Quantos meses de histórico de vendas gerar
-};
-```
+🧠 Tecnologias Usadas
+Frontend: JavaScript (ES6), HTML, CSS
 
----
+Backend: Node.js + Express.js
 
-## 🔌 Conexão com o banco
-A função `getConnectionConfig()` faz o parse da URL e retorna as configurações para o `pg.Pool`.  
-Se a URL estiver errada, o script exibe uma mensagem e encerra.
+Banco: PostgreSQL
 
----
+Outros: dotenv, cors, pg
 
-## 🧱 Funções auxiliares
-- **`query(pool, text, params)`** → executa queries com tratamento de erro e logs.
-- **`batchInsert(...)`** → insere grandes quantidades de dados em lotes (batches).
-
----
-
-## 🧩 setupBaseData()
-Cria os dados **básicos** e obrigatórios:
-- **Brand (marca principal)**: “Nola God Level Brand”  
-- **Sub-brands**: Challenge Burger, Challenge Pizza, Challenge Sushi  
-- **Canais de venda**: Presencial, iFood, Rappi, Uber Eats, WhatsApp, App Próprio  
-- **Tipos de pagamento**: Dinheiro, Cartão, PIX etc.
-
-Usa `ON CONFLICT DO NOTHING` para evitar duplicações ao rodar o script mais de uma vez.
-
----
-
-## 🏪 generateStores()
-Cria várias **lojas (franquias)** simuladas em cidades diferentes com:
-- Nome, cidade, latitude e longitude
-- Flags (`is_active`, `is_own`)
-- Data de criação aleatória
-
----
-
-## 🍔 generateProducts()
-Cria categorias e produtos com nomes e preços realistas.
-
-**Categorias criadas:**
-- Burgers 🍔
-- Pizzas 🍕
-- Pratos 🍽️
-- Combos 🍟
-- Sobremesas 🍰
-- Bebidas 🥤
-
-Cada categoria gera produtos com nomes como:
-```
-Pizza Calabresa 1
-Cheeseburger 3
-Combo Família 2
-```
-
----
-
-## 👥 generateCustomers()
-Cria milhares de **clientes falsos** com:
-- Nome (`Cliente 452`)
-- E-mail (`cliente452@email.com`)
-- Telefone (`119xxxxxxxx`)
-- Data de nascimento aleatória
-- Gênero, consentimento e preferências de marketing
-
-As inserções são feitas em **batches de 1000** para performance.
-
----
-
-## 💸 generateSales()
-Gera o **histórico de vendas** simulando comportamento real.
-
-Cada venda:
-- Escolhe loja, canal e cliente aleatoriamente  
-- Gera hora, produtos, descontos, taxas e total  
-- Define status (`COMPLETED` ou `CANCELLED`)  
-
-Mais vendas ocorrem nos fins de semana.
-
----
-
-## 🧾 insertSalesBatch()
-Insere vendas em lote na tabela `sales` e cria os produtos vendidos (`product_sales`).
-
-Cada venda contém:
-- Valores financeiros (itens, descontos, taxas, total)
-- Tempo de produção e entrega (simulados)
-- Origem (`POS`)
-
----
-
-## 📊 Estatísticas finais
-Ao final, o script exibe:
-```
-📊 Estatísticas finais:
-   Vendas: 512.304
-   Produtos vendidos: 1.842.750
-✅ Popularização concluída com sucesso!
-```
-
----
-
-## 🧮 Fluxo geral
-```plaintext
-1. Conecta ao banco
-2. Cria marca, canais, categorias
-3. Gera lojas
-4. Gera produtos
-5. Gera clientes
-6. Gera vendas
-7. Exibe estatísticas
-```
-
----
-
-## 🧩 Estrutura das tabelas esperadas
-
-| Tabela | Campos principais |
-|--------|--------------------|
-| `brands` | id, name |
-| `sub_brands` | id, brand_id, name |
-| `stores` | id, name, city, latitude, longitude |
-| `channels` | id, name, type |
-| `products` | id, name, category_id |
-| `categories` | id, name |
-| `customers` | id, customer_name, email |
-| `sales` | id, store_id, channel_id, total_amount, sale_status_desc |
-| `product_sales` | id, sale_id, product_id, quantity, total_price |
-
----
-
-## ✅ Resumo final
-Este script é perfeito para **gerar dados simulados realistas** em bancos PostgreSQL e testar **dashboards de performance** e **relatórios analíticos** sem depender de dados reais.
+🧾 Licença
+MIT © 2025 — Desenvolvido para fins educacionais e demonstração analítica.
